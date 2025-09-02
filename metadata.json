@@ -1,0 +1,7 @@
+{
+  "name": "Tea Time",
+  "description": "A supportive space for mental and emotional exploration, inspired by the Mad Hatter's tea party.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
