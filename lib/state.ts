@@ -9,7 +9,7 @@ import {
   Paul,
   Shane,
   Penny,
-  SabioHatter,
+  TheHatter,
 } from './presets/agents';
 
 /**
@@ -35,6 +35,29 @@ export const useUser = create<
 /**
  * Agents
  */
+
+const PERSONAL_AGENTS_STORAGE_KEY = 'tea-time-personal-agents';
+
+function loadPersonalAgents(): Agent[] {
+  try {
+    const stored = localStorage.getItem(PERSONAL_AGENTS_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error('Failed to load personal agents from localStorage', e);
+  }
+  return [];
+}
+
+function savePersonalAgents(agents: Agent[]) {
+  try {
+    localStorage.setItem(PERSONAL_AGENTS_STORAGE_KEY, JSON.stringify(agents));
+  } catch (e) {
+    console.error('Failed to save personal agents to localStorage', e);
+  }
+}
+
 function getAgentById(id: string) {
   const { availablePersonal, availablePresets } = useAgent.getState();
   return (
@@ -51,31 +74,44 @@ export const useAgent = create<{
   addAgent: (agent: Agent) => void;
   update: (agentId: string, adjustments: Partial<Agent>) => void;
 }>(set => ({
-  current: SabioHatter,
-  availablePresets: [SabioHatter, Paul, Charlotte, Shane, Penny],
-  availablePersonal: [],
+  current: TheHatter,
+  availablePresets: [TheHatter, Paul, Charlotte, Shane, Penny],
+  availablePersonal: loadPersonalAgents(),
 
   addAgent: (agent: Agent) => {
-    set(state => ({
-      availablePersonal: [...state.availablePersonal, agent],
-      current: agent,
-    }));
+    set(state => {
+      const newPersonalAgents = [...state.availablePersonal, agent];
+      savePersonalAgents(newPersonalAgents);
+      return {
+        availablePersonal: newPersonalAgents,
+        current: agent,
+      };
+    });
   },
   setCurrent: (agent: Agent | string) =>
     set({ current: typeof agent === 'string' ? getAgentById(agent) : agent }),
   update: (agentId: string, adjustments: Partial<Agent>) => {
-    let agent = getAgentById(agentId);
+    const agent = getAgentById(agentId);
     if (!agent) return;
     const updatedAgent = { ...agent, ...adjustments };
-    set(state => ({
-      availablePresets: state.availablePresets.map(a =>
+    set(state => {
+      const newPersonalAgents = state.availablePersonal.map(a =>
         a.id === agentId ? updatedAgent : a
-      ),
-      availablePersonal: state.availablePersonal.map(a =>
-        a.id === agentId ? updatedAgent : a
-      ),
-      current: state.current.id === agentId ? updatedAgent : state.current,
-    }));
+      );
+
+      // Only save if the updated agent is a personal one.
+      if (state.availablePersonal.some(a => a.id === agentId)) {
+        savePersonalAgents(newPersonalAgents);
+      }
+
+      return {
+        availablePresets: state.availablePresets.map(a =>
+          a.id === agentId ? updatedAgent : a
+        ),
+        availablePersonal: newPersonalAgents,
+        current: state.current.id === agentId ? updatedAgent : state.current,
+      };
+    });
   },
 }));
 

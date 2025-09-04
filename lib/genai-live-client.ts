@@ -14,8 +14,8 @@ import {
   Part,
   Session,
 } from '@google/genai';
-// Fix: Use named import for EventEmitter.
-import { EventEmitter } from 'eventemitter3';
+// Fix: `eventemitter3` uses a default export, so we must use a default import.
+import EventEmitter from 'eventemitter3';
 import { DEFAULT_LIVE_API_MODEL } from './constants';
 import { difference } from 'lodash';
 import { base64ToArrayBuffer } from './utils';

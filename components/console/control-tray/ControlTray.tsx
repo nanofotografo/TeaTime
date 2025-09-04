@@ -61,7 +61,9 @@ function ControlTray({ children }: ControlTrayProps) {
       ]);
     };
     if (connected && !muted && audioRecorder) {
-      audioRecorder.on('data', onData).start();
+      // Fix: The `start()` method on AudioRecorder returns a promise, so it cannot be chained with the `on()` method.
+      audioRecorder.on('data', onData);
+      audioRecorder.start();
     } else {
       audioRecorder.stop();
     }

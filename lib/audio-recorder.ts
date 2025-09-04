@@ -23,8 +23,8 @@ import AudioRecordingWorklet from './worklets/audio-processing';
 import VolMeterWorket from './worklets/vol-meter';
 
 import { createWorketFromSrc } from './audioworklet-registry';
-// Fix: Use named import for EventEmitter.
-import { EventEmitter } from 'eventemitter3';
+// Fix: `eventemitter3` uses a default export, so we must use a default import.
+import EventEmitter from 'eventemitter3';
 
 function arrayBufferToBase64(buffer: ArrayBuffer) {
   var binary = '';
